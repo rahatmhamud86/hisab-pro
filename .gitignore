@@ -1,0 +1,25 @@
+# dependencies
+/node_modules
+
+# production
+/build
+
+# firebase
+.env
+.env.local
+.firebase/
+firebase-debug.log
+
+# capacitor / android
+/android/app/build
+/android/.gradle
+/android/local.properties
+
+# misc
+.DS_Store
+.env.development.local
+.env.test.local
+.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

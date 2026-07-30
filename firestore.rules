@@ -1,0 +1,21 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // users/{uid} — প্রোফাইল ডকুমেন্ট
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // users/{uid}/transactions/{transactionId} — শুধুমাত্র ডকুমেন্টের মালিক
+      match /transactions/{transactionId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // অন্য কোনো path-এ কোনো অ্যাক্সেস নেই (ডিফল্ট deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
