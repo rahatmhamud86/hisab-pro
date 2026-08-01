@@ -6,6 +6,11 @@ import PieChartCard from "../components/PieChartCard";
 import TransactionList from "../components/TransactionList";
 import SearchBar from "../components/SearchBar";
 import FilterBar from "../components/FilterBar";
+import {
+  SkeletonBalanceCard,
+  SkeletonChartCard,
+  SkeletonTransactionList,
+} from "../components/Skeleton";
 import { useTransactions } from "../hooks/useTransactions";
 import { rangeBounds, inRange, FILTER_LABELS } from "../utils/dateRange";
 
@@ -91,27 +96,36 @@ export default function Dashboard() {
           setCustomTo={setCustomTo}
         />
 
-        <section className="grid" style={{ marginTop: 14 }}>
-          <BalanceCard summary={summary} titleRange={FILTER_LABELS[filter]} />
-          <PieChartCard data={chartData} />
-          <TransactionForm
-            onSubmit={handleSubmit}
-            editingTxn={editingTxn}
-            onCancelEdit={() => setEditingTxn(null)}
-          />
-        </section>
-
         {loading ? (
-          <div className="card" style={{ textAlign: "center", opacity: 0.7 }}>
-            লোড হচ্ছে...
-          </div>
+          <>
+            <section className="grid" style={{ marginTop: 14 }}>
+              <SkeletonBalanceCard />
+              <SkeletonChartCard />
+              <div className="card">
+                <SkeletonBalanceCard />
+              </div>
+            </section>
+            <SkeletonTransactionList rows={5} />
+          </>
         ) : (
-          <TransactionList
-            items={filtered.slice(0, 20)}
-            onEdit={setEditingTxn}
-            onDelete={handleDelete}
-            title="সাম্প্রতিক লেনদেন"
-          />
+          <>
+            <section className="grid" style={{ marginTop: 14 }}>
+              <BalanceCard summary={summary} titleRange={FILTER_LABELS[filter]} />
+              <PieChartCard data={chartData} />
+              <TransactionForm
+                onSubmit={handleSubmit}
+                editingTxn={editingTxn}
+                onCancelEdit={() => setEditingTxn(null)}
+              />
+            </section>
+
+            <TransactionList
+              items={filtered.slice(0, 20)}
+              onEdit={setEditingTxn}
+              onDelete={handleDelete}
+              title="সাম্প্রতিক লেনদেন"
+            />
+          </>
         )}
 
         <footer className="foot">

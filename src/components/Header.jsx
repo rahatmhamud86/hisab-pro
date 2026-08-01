@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAuthContext } from "../context/AuthContext";
 import { updateUserProfile } from "../firebase/firestoreService";
 
-export default function Header() {
+export default function Header({ showAccount = false }) {
   const { profile, user, signOutUser, refreshProfile } = useAuthContext();
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(profile?.name || "");
@@ -28,7 +28,9 @@ export default function Header() {
           <div className="logo">৳</div>
         )}
         <div className="brandText">
-          {!editingName ? (
+          {!showAccount ? (
+            <div className="appTitle">হিসাব প্রো</div>
+          ) : !editingName ? (
             <>
               <div className="appTitle">{profile?.name || "হিসাব প্রো"}</div>
               <div style={{ display: "flex", gap: 10 }}>

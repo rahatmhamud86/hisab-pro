@@ -4,6 +4,7 @@ import FilterBar from "../components/FilterBar";
 import PieChartCard from "../components/PieChartCard";
 import BarChartCard from "../components/BarChartCard";
 import MonthlyChart from "../components/MonthlyChart";
+import { SkeletonChartCard, SkeletonBox } from "../components/Skeleton";
 import { useTransactions } from "../hooks/useTransactions";
 import { rangeBounds, inRange, last12MonthsBuckets, FILTER_LABELS } from "../utils/dateRange";
 import { formatAmount } from "../utils/formatters";
@@ -62,9 +63,24 @@ export default function Statistics() {
         />
 
         {loading ? (
-          <div className="card" style={{ marginTop: 14, textAlign: "center", opacity: 0.7 }}>
-            লোড হচ্ছে...
-          </div>
+          <>
+            <section className="grid" style={{ marginTop: 14 }}>
+              <SkeletonChartCard />
+              <div className="card">
+                <SkeletonBox height={16} width="40%" style={{ marginBottom: 14 }} />
+                <SkeletonBox height={14} width="70%" style={{ marginBottom: 10 }} />
+                <SkeletonBox height={12} width="55%" style={{ marginBottom: 6 }} />
+                <SkeletonBox height={12} width="55%" style={{ marginBottom: 6 }} />
+                <SkeletonBox height={12} width="55%" />
+              </div>
+            </section>
+            <section style={{ marginTop: 14 }}>
+              <SkeletonBox height={140} />
+            </section>
+            <section style={{ marginTop: 14 }}>
+              <SkeletonBox height={200} />
+            </section>
+          </>
         ) : (
           <>
             <section className="grid" style={{ marginTop: 14 }}>

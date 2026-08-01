@@ -139,7 +139,7 @@ export default function Settings() {
   return (
     <div className="page">
       <div className="shell">
-        <Header />
+        <Header showAccount />
 
         <section className="card" style={{ marginBottom: 14 }}>
           <div className="cardTitle">প্রোফাইল</div>

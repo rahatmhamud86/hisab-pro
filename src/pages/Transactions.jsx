@@ -4,6 +4,7 @@ import TransactionForm from "../components/TransactionForm";
 import TransactionList from "../components/TransactionList";
 import SearchBar from "../components/SearchBar";
 import FilterBar from "../components/FilterBar";
+import { SkeletonTransactionList } from "../components/Skeleton";
 import { useTransactions } from "../hooks/useTransactions";
 import { rangeBounds, inRange } from "../utils/dateRange";
 
@@ -97,9 +98,7 @@ export default function Transactions() {
             onCancelEdit={() => setEditingTxn(null)}
           />
           {loading ? (
-            <div className="card" style={{ textAlign: "center", opacity: 0.7 }}>
-              লোড হচ্ছে...
-            </div>
+            <SkeletonTransactionList rows={6} />
           ) : (
             <TransactionList items={filtered} onEdit={setEditingTxn} onDelete={handleDelete} />
           )}
