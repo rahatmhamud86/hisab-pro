@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import Header from "../components/Header";
-import TransactionForm from "../components/TransactionForm";
 import TransactionList from "../components/TransactionList";
 import SearchBar from "../components/SearchBar";
 import FilterBar from "../components/FilterBar";
@@ -9,12 +8,12 @@ import { useTransactions } from "../hooks/useTransactions";
 import { rangeBounds, inRange } from "../utils/dateRange";
 
 export default function Transactions() {
-  const { txns, loading, add, update, remove } = useTransactions();
+  const { txns, loading, update, remove } = useTransactions();
   const [filter, setFilter] = useState("all");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
   const [searchText, setSearchText] = useState("");
-  const [typeFilter, setTypeFilter] = useState("all"); // all | income | expense
+  const [typeFilter, setTypeFilter] = useState("all");
   const [editingTxn, setEditingTxn] = useState(null);
 
   const { from, to } = useMemo(
@@ -37,13 +36,9 @@ export default function Transactions() {
     return data;
   }, [txns, from, to, typeFilter, searchText]);
 
-  async function handleSubmit(payload) {
-    if (editingTxn) {
-      await update(editingTxn.id, payload);
-      setEditingTxn(null);
-    } else {
-      await add(payload);
-    }
+  async function handleUpdate(id, data) {
+    await update(id, data);
+    setEditingTxn(null);
   }
 
   async function handleDelete(id) {
@@ -91,18 +86,16 @@ export default function Transactions() {
           </button>
         </div>
 
-        <section className="grid" style={{ marginTop: 14, gridTemplateColumns: "0.8fr 1.2fr" }}>
-          <TransactionForm
-            onSubmit={handleSubmit}
-            editingTxn={editingTxn}
-            onCancelEdit={() => setEditingTxn(null)}
+        {loading ? (
+          <SkeletonTransactionList rows={8} />
+        ) : (
+          <TransactionList
+            items={filtered}
+            onEdit={setEditingTxn}
+            onDelete={handleDelete}
+            title="সব লেনদেন"
           />
-          {loading ? (
-            <SkeletonTransactionList rows={6} />
-          ) : (
-            <TransactionList items={filtered} onEdit={setEditingTxn} onDelete={handleDelete} />
-          )}
-        </section>
+        )}
       </div>
     </div>
   );

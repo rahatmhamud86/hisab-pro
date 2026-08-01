@@ -2,15 +2,10 @@ import React, { useMemo, useState } from "react";
 import Header from "../components/Header";
 import BalanceCard from "../components/BalanceCard";
 import TransactionForm from "../components/TransactionForm";
-import PieChartCard from "../components/PieChartCard";
 import TransactionList from "../components/TransactionList";
 import SearchBar from "../components/SearchBar";
 import FilterBar from "../components/FilterBar";
-import {
-  SkeletonBalanceCard,
-  SkeletonChartCard,
-  SkeletonTransactionList,
-} from "../components/Skeleton";
+import { SkeletonBalanceCard, SkeletonTransactionList } from "../components/Skeleton";
 import { useTransactions } from "../hooks/useTransactions";
 import { rangeBounds, inRange, FILTER_LABELS } from "../utils/dateRange";
 
@@ -42,25 +37,12 @@ export default function Dashboard() {
   }, [txns, from, to, searchText]);
 
   const summary = useMemo(() => {
-    let income = 0,
-      expense = 0;
+    let income = 0, expense = 0;
     for (const t of filtered) {
       if (t.type === "income") income += Number(t.amount);
       else expense += Number(t.amount);
     }
     return { income, expense, balance: income - expense };
-  }, [filtered]);
-
-  const chartData = useMemo(() => {
-    const map = {};
-    filtered.forEach((t) => {
-      if (t.type === "expense") {
-        map[t.category] = (map[t.category] || 0) + Number(t.amount);
-      }
-    });
-    return Object.keys(map)
-      .map((key) => ({ name: key, value: map[key] }))
-      .sort((a, b) => b.value - a.value);
   }, [filtered]);
 
   async function handleSubmit(payload) {
@@ -100,18 +82,14 @@ export default function Dashboard() {
           <>
             <section className="grid" style={{ marginTop: 14 }}>
               <SkeletonBalanceCard />
-              <SkeletonChartCard />
-              <div className="card">
-                <SkeletonBalanceCard />
-              </div>
+              <SkeletonBalanceCard />
             </section>
-            <SkeletonTransactionList rows={5} />
+            <SkeletonTransactionList rows={1} />
           </>
         ) : (
           <>
             <section className="grid" style={{ marginTop: 14 }}>
               <BalanceCard summary={summary} titleRange={FILTER_LABELS[filter]} />
-              <PieChartCard data={chartData} />
               <TransactionForm
                 onSubmit={handleSubmit}
                 editingTxn={editingTxn}
@@ -120,10 +98,10 @@ export default function Dashboard() {
             </section>
 
             <TransactionList
-              items={filtered.slice(0, 20)}
+              items={filtered.slice(0, 1)}
               onEdit={setEditingTxn}
               onDelete={handleDelete}
-              title="সাম্প্রতিক লেনদেন"
+              title="সর্বশেষ লেনদেন"
             />
           </>
         )}
