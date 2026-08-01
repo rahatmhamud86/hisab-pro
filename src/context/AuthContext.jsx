@@ -3,6 +3,7 @@ import { subscribeToAuthChanges, loginWithGoogle, logout } from "../firebase/aut
 import {
   getUserProfile,
   createOrUpdateUserProfile,
+  ensureFamily,
 } from "../firebase/firestoreService";
 
 const AuthContext = createContext(null);
@@ -24,8 +25,10 @@ export function AuthProvider({ children }) {
             email: firebaseUser.email || "",
             photo: firebaseUser.photoURL || "",
           });
-          p = await getUserProfile(firebaseUser.uid);
         }
+        await ensureFamily(firebaseUser.uid, firebaseUser.email, firebaseUser.displayName);
+        // ensureFamily এর পর profile আবার fetch করছি, যেন familyId সহ সবশেষ ডেটা পাই
+        p = await getUserProfile(firebaseUser.uid);
         setProfile(p);
       } else {
         setProfile(null);

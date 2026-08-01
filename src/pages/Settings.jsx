@@ -1,9 +1,14 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import Header from "../components/Header";
 import { useAuthContext } from "../context/AuthContext";
 import { useAppContext } from "../context/AppContext";
 import { useTransactions } from "../hooks/useTransactions";
 import { deleteCurrentAccount } from "../firebase/authService";
+import {
+  createInvite,
+  getFamilyMembers,
+  removeFamilyMember,
+} from "../firebase/firestoreService";
 import {
   exportToCSV,
   exportToExcel,
@@ -19,6 +24,27 @@ export default function Settings() {
   const fileInputRef = useRef(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteBusy, setInviteBusy] = useState(false);
+  const [inviteMsg, setInviteMsg] = useState("");
+
+  const [members, setMembers] = useState([]);
+  const [membersLoading, setMembersLoading] = useState(true);
+  const [removingUid, setRemovingUid] = useState(null);
+
+  const isOwner = profile?.familyId && user?.uid === profile.familyId;
+
+  const loadMembers = useCallback(async () => {
+    if (!profile?.familyId) return;
+    setMembersLoading(true);
+    const data = await getFamilyMembers(profile.familyId);
+    setMembers(data.members);
+    setMembersLoading(false);
+  }, [profile?.familyId]);
+
+  useEffect(() => {
+    loadMembers();
+  }, [loadMembers]);
 
   const summary = txns.reduce(
     (s, t) => {
@@ -77,6 +103,39 @@ export default function Settings() {
     }
   }
 
+  async function handleSendInvite() {
+    if (!inviteEmail || !inviteEmail.includes("@")) {
+      setInviteMsg("❌ সঠিক ইমেইল দিন");
+      return;
+    }
+    setInviteBusy(true);
+    setInviteMsg("");
+    try {
+      await createInvite(profile.familyId, profile.name, inviteEmail.trim());
+      setInviteMsg("✅ Invite ইমেইল পাঠানো হয়েছে");
+      setInviteEmail("");
+    } catch (err) {
+      console.error(err);
+      setInviteMsg("❌ Invite পাঠাতে সমস্যা হয়েছে, আবার চেষ্টা করুন");
+    } finally {
+      setInviteBusy(false);
+    }
+  }
+
+  async function handleRemoveMember(targetUid, name) {
+    if (!window.confirm(`${name}-কে Family Group থেকে বাদ দিতে চান? সে আর আপনাদের লেনদেন দেখতে পারবে না।`))
+      return;
+    setRemovingUid(targetUid);
+    try {
+      await removeFamilyMember(profile.familyId, targetUid);
+      await loadMembers();
+    } catch (err) {
+      setInviteMsg("❌ রিমুভ করতে সমস্যা হয়েছে");
+    } finally {
+      setRemovingUid(null);
+    }
+  }
+
   return (
     <div className="page">
       <div className="shell">
@@ -93,6 +152,70 @@ export default function Settings() {
               <div className="subTitle">{user?.email}</div>
             </div>
           </div>
+        </section>
+
+        <section className="card" style={{ marginBottom: 14 }}>
+          <div className="cardTitle">
+            👨‍👩‍👧‍👦 Family Group {members.length > 0 && `(${members.length} জন)`}
+          </div>
+          <div className="subTitle" style={{ marginTop: 8, marginBottom: 10 }}>
+            ইমেইল দিয়ে পরিবারের সদস্যকে ইনভাইট করুন — তারা যোগ হলে সবার লেনদেন একসাথে দেখা যাবে
+          </div>
+
+          {membersLoading ? (
+            <div className="subTitle">লোড হচ্ছে...</div>
+          ) : (
+            <div style={{ marginBottom: 14 }}>
+              {members.map((m) => (
+                <div
+                  key={m.uid}
+                  className="row"
+                  style={{
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "8px 0",
+                    borderBottom: "1px solid var(--border, rgba(255,255,255,0.08))",
+                  }}
+                >
+                  <div>
+                    <div style={{ fontWeight: 700 }}>
+                      {m.name} {m.uid === profile.familyId && "👑"} {m.uid === user.uid && "(আপনি)"}
+                    </div>
+                    <div className="subTitle" style={{ fontSize: 12 }}>{m.email}</div>
+                  </div>
+                  {isOwner && m.uid !== user.uid && (
+                    <button
+                      className="btn"
+                      style={{ borderColor: "var(--red)", color: "var(--red)", padding: "6px 10px" }}
+                      onClick={() => handleRemoveMember(m.uid, m.name)}
+                      disabled={removingUid === m.uid}
+                    >
+                      {removingUid === m.uid ? "..." : "🗑️ Remove"}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="row" style={{ flexWrap: "wrap", gap: 8 }}>
+            <input
+              className="input"
+              type="email"
+              placeholder="member@example.com"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              style={{ flex: 1, minWidth: 200 }}
+            />
+            <button className="btn" onClick={handleSendInvite} disabled={inviteBusy}>
+              {inviteBusy ? "পাঠানো হচ্ছে..." : "📧 Invite পাঠান"}
+            </button>
+          </div>
+          {inviteMsg && (
+            <div className="smallNote" style={{ marginTop: 8 }}>
+              {inviteMsg}
+            </div>
+          )}
         </section>
 
         <section className="card" style={{ marginBottom: 14 }}>

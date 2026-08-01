@@ -1,32 +1,34 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuthContext } from "../context/AuthContext";
 import {
-  subscribeToTransactions,
-  addTransaction,
-  updateTransaction,
-  deleteTransaction,
-  bulkAddTransactions,
+  subscribeToFamilyTransactions,
+  addFamilyTransaction,
+  updateFamilyTransaction,
+  deleteFamilyTransaction,
 } from "../firebase/firestoreService";
 
 /**
- * ইউজার লগইন করা মাত্র Firestore-এর সাথে রিয়েল-টাইম সিঙ্ক শুরু হয়।
- * অন্য ডিভাইস থেকে অ্যাড/এডিট/ডিলিট করলেও এখানে সাথে সাথে আপডেট আসবে।
+ * ইউজার লগইন করা মাত্র তার Family Group-এর transaction গুলোর সাথে
+ * রিয়েল-টাইম সিঙ্ক শুরু হয়। পরিবারের যে কেউ অ্যাড/এডিট/ডিলিট করলে
+ * সবার স্ক্রিনে সাথে সাথে আপডেট আসবে।
  */
 export function useTransactions() {
-  const { user } = useAuthContext();
+  const { user, profile } = useAuthContext();
   const [txns, setTxns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const familyId = profile?.familyId;
+
   useEffect(() => {
-    if (!user) {
+    if (!user || !familyId) {
       setTxns([]);
       setLoading(false);
       return;
     }
     setLoading(true);
-    const unsub = subscribeToTransactions(
-      user.uid,
+    const unsub = subscribeToFamilyTransactions(
+      familyId,
       (data) => {
         setTxns(data);
         setLoading(false);
@@ -37,38 +39,40 @@ export function useTransactions() {
       }
     );
     return () => unsub();
-  }, [user]);
+  }, [user, familyId]);
 
   const add = useCallback(
     (txn) => {
-      if (!user) return Promise.reject(new Error("লগইন করুন"));
-      return addTransaction(user.uid, txn);
+      if (!user || !familyId) return Promise.reject(new Error("লগইন করুন"));
+      return addFamilyTransaction(familyId, { ...txn, addedBy: user.uid });
     },
-    [user]
+    [user, familyId]
   );
 
   const update = useCallback(
     (id, data) => {
-      if (!user) return Promise.reject(new Error("লগইন করুন"));
-      return updateTransaction(user.uid, id, data);
+      if (!user || !familyId) return Promise.reject(new Error("লগইন করুন"));
+      return updateFamilyTransaction(familyId, id, data);
     },
-    [user]
+    [user, familyId]
   );
 
   const remove = useCallback(
     (id) => {
-      if (!user) return Promise.reject(new Error("লগইন করুন"));
-      return deleteTransaction(user.uid, id);
+      if (!user || !familyId) return Promise.reject(new Error("লগইন করুন"));
+      return deleteFamilyTransaction(familyId, id);
     },
-    [user]
+    [user, familyId]
   );
 
   const restore = useCallback(
-    (list) => {
-      if (!user) return Promise.reject(new Error("লগইন করুন"));
-      return bulkAddTransactions(user.uid, list);
+    async (list) => {
+      if (!user || !familyId) return Promise.reject(new Error("লগইন করুন"));
+      for (const txn of list) {
+        await addFamilyTransaction(familyId, { ...txn, addedBy: user.uid });
+      }
     },
-    [user]
+    [user, familyId]
   );
 
   return { txns, loading, error, add, update, remove, restore };
