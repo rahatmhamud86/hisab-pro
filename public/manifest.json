@@ -1,6 +1,7 @@
 {
   "short_name": "হিসাব প্রো",
-  "name": "হিসাব প্রো - Hisab Pro Expense Tracker",
+  "name": "হিসাব প্রো — আয়-ব্যয়ের হিসাব",
+  "description": "পরিবারের সবার আয়-ব্যয়ের হিসাব এক জায়গায়",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,17 +11,26 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#0b1220",
-  "background_color": "#0b1220",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "theme_color": "#080c14",
+  "background_color": "#080c14",
+  "categories": [
+    "finance",
+    "productivity"
+  ],
+  "lang": "bn",
+  "scope": "/",
+  "prefer_related_applications": false
 }

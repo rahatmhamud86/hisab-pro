@@ -5,6 +5,8 @@ import { AuthProvider } from "./context/AuthContext";
 import { AppProvider } from "./context/AppContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BottomNav from "./components/BottomNav";
+import PullToRefresh from "./components/PullToRefresh";
+import InstallPrompt from "./components/InstallPrompt";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import Statistics from "./pages/Statistics";
@@ -13,10 +15,11 @@ import JoinFamily from "./pages/JoinFamily";
 
 function AuthenticatedShell({ children }) {
   return (
-    <>
+    <PullToRefresh>
       {children}
       <BottomNav />
-    </>
+      <InstallPrompt />
+    </PullToRefresh>
   );
 }
 
